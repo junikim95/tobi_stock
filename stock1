@@ -1,0 +1,16 @@
+import pandas as pd
+pd.core.common.is_list_like = pd.api.types.is_list_like
+from pandas_datareader import data
+
+import fix_yahoo_finance as yf
+
+yf.pdr_override()
+
+naver = data.get_data_yahoo('035420.KS', '2016-02-19', '2018-08-31')
+#naver.tail()
+
+gs = data.get_data_yahoo("078930.KS", "2014-01-01", "2016-03-06")
+#gs.tail()
+
+stock = data.get_data_yahoo(['035420.KS','078930.KS'],'2011-1-1','2018-8-31')
+stock
