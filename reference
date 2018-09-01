@@ -44,4 +44,4 @@ def reload_empty(market):
             tmp_df.to_csv(file_name)
 
 reload_empty('kosdaq')
-reload_empty('kospi')
+reload_empty('kospi')  
