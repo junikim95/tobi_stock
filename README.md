@@ -92,3 +92,52 @@ while len(file_list_kospi) < len(kospi):
     stop_count+=1;
     if stop_count>3:
         break
+
+
+######
+# 아래는 파일 가져와서 해당 일자에 오른 정도 분석 하기
+
+from fredapi import Fred
+fred = Fred(api_key='285dc6e882d8acdd5241b34c2f83f6ff')
+data = pd.DataFrame(fred.get_series('INTDSRKRM193N'))
+data2 = data.loc[(data.index > '2005-01-01')&(data.index<'2009-01-01')]
+#data2
+
+# INTDSRKRM193N -> Interest Rates, Discount Rate for Republic of Korea
+# 리먼 직전 금리 인상 시기로 조정함
+# 2006-02-01, 올렸다가 다시 내림. 이후 2006-06-01에 다시 올림
+
+# 2006-01-01: 2.00 -> 2006-02-01: 2.50 
+# 2006-05-01: 2.25 -> 2006-06-01: 2.50 
+# 2008-09-01: 3.50 -> 2008-10-01: 2.50 
+
+#file_list = glob.glob('*.csv')
+file_list = glob.glob('./kospi_kosdaq/*.csv')
+review =[]
+
+for stock in file_list:
+    try:
+        df=pd.read_csv(stock)
+        a = df.loc[(df['Date']>='2006-06-01')&(df['Date']<='2006-06-31'),'Adj Close'].dropna().mean()
+        b = df.loc[(df['Date']>='2008-09-01')&(df['Date']<='2008-09-30'),'Adj Close'].dropna().mean()    
+        c = round(b/a*100, 2)
+        review.append(c)
+    except:
+        print(stock +'is empty file!!!')
+        review.append(0)
+        pass
+
+my_df = pd.DataFrame({'name':file_list, 'rate':review})
+my_df = my_df.sort_values(['rate'], ascending=[False])
+my_df
+
+### 종목 정보 확인 필요
+kosdaq=pd.read_excel('kosdaq_180902.xls')
+kospi=pd.read_csv('kospi_180902.csv')
+#kosdaq_dict = kosdaq.set_index('종목코드').to_dict()
+#kosdaq_dict
+kosdaq.set_index('종목코드', inplace=True)
+
+#df.groupby('ID').apply(lambda x: x.to_dict('list')).reset_index(drop=True).to_dict()
+
+kosdaq.groupby('종목코드')['기업명','업종','자본금(원)'].apply(lambda x: x.to_dict('list')).reset_index(drop=True).to_dict()
